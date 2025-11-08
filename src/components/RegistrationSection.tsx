@@ -43,7 +43,7 @@ const RegistrationSection = () => {
     try {
       // ✅ Send form data to your deployed backend API (not localhost after deploy)
       const response = await axios.post(
-        "https://your-render-backend-url.onrender.com/api/register",
+        "https://spirit-rise-yoga-2.onrender.com/api/register",
         data
       );
 
