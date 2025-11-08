@@ -15,15 +15,6 @@ const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: "Why Join", href: "#why-join" },
-    { name: "Journey", href: "#journey" },
-    { name: "Schedule", href: "#schedule" },
-    { name: "Instructors", href: "#instructors" },
-    { name: "FAQs", href: "#faqs" },
-    { name: "Contact", href: "#contact" },
-  ];
-
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
     if (element) {
@@ -52,18 +43,6 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link, index) => (
-              <motion.button
-                key={link.name}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => scrollToSection(link.href)}
-                className="text-foreground hover:text-primary transition-colors duration-300 font-medium"
-              >
-                {link.name}
-              </motion.button>
-            ))}
             <Button
               onClick={() => scrollToSection("#register")}
               className="bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-hover"
@@ -91,15 +70,6 @@ const Navigation = () => {
               className="md:hidden mt-4 bg-card rounded-lg shadow-soft overflow-hidden"
             >
               <div className="flex flex-col p-4 space-y-3">
-                {navLinks.map((link) => (
-                  <button
-                    key={link.name}
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-left text-foreground hover:text-primary transition-colors py-2"
-                  >
-                    {link.name}
-                  </button>
-                ))}
                 <Button
                   onClick={() => scrollToSection("#register")}
                   className="bg-primary hover:bg-primary/90 w-full"
