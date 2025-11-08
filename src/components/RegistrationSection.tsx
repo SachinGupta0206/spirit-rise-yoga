@@ -89,13 +89,20 @@ const RegistrationSection = () => {
       // Show success message
       toast({
         title: "🎉 Successfully Registered for the Free Yoga Camp!",
-        description:
-          "Welcome to our yoga community! Check your email for details.",
+        description: "Redirecting you to our WhatsApp group...",
       });
 
       setIsSubmitted(true);
 
-      // Auto-close after 2-3 seconds
+      // Redirect to WhatsApp group after 2 seconds
+      setTimeout(() => {
+        window.open(
+          "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
+          "_blank"
+        );
+      }, 2000);
+
+      // Auto-close success message after 3 seconds
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({ name: "", email: "" });
