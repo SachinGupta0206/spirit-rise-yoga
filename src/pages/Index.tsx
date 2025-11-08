@@ -1,12 +1,35 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Navigation from "@/components/Navigation";
+import HeroSection from "@/components/HeroSection";
+import WhyJoinSection from "@/components/WhyJoinSection";
+import JourneySection from "@/components/JourneySection";
+import ScheduleSection from "@/components/ScheduleSection";
+import InstructorsSection from "@/components/InstructorsSection";
+import RegistrationSection from "@/components/RegistrationSection";
+import FAQSection from "@/components/FAQSection";
+import ContactSection from "@/components/ContactSection";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Navigation />
+      <HeroSection />
+      <WhyJoinSection />
+      <JourneySection />
+      <ScheduleSection />
+      <InstructorsSection />
+      <RegistrationSection />
+      <FAQSection />
+      <ContactSection />
+      <ScrollToTop />
+      
+      <footer className="bg-foreground/5 py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">
+            © 2025 Svastha Wellness. All rights reserved. | Transform your life through yoga.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
