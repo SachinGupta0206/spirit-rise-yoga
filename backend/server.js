@@ -12,10 +12,24 @@ app.use(cors());
 app.use(express.json());
 
 // ✅ Connect to MongoDB Atlas
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch((err) => console.error("❌ Connection error:", err));
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI environment variable is not set");
+    }
+
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ Connected to MongoDB Atlas");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 // ✅ Schema
 const registrationSchema = new mongoose.Schema({
@@ -31,12 +45,36 @@ const Registration = mongoose.model("Registration", registrationSchema);
 // ✅ Route
 app.post("/api/register", async (req, res) => {
   try {
-    const registration = new Registration(req.body);
+    console.log("📝 Registration request received:", req.body);
+
+    const { name, phone, email, batch } = req.body;
+
+    // Basic validation
+    if (!name || !email) {
+      return res.status(400).json({ message: "Name and Email are required." });
+    }
+
+    const registration = new Registration({
+      name,
+      phone: phone || "",
+      email,
+      batch: batch || "",
+      date: new Date(),
+    });
+
     await registration.save();
-    res.status(201).json({ message: "Registration saved successfully" });
+    console.log("✅ Registration saved successfully:", registration);
+
+    res.status(201).json({
+      message: "Registration saved successfully",
+      data: registration,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("❌ Registration error:", err);
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
 
