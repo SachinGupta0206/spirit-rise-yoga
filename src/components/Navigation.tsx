@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import svasthaLogo from "@/assets/svastha.png";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,9 +37,14 @@ const Navigation = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-2xl font-bold text-primary"
+            className="flex items-center gap-3"
           >
-            Svastha Wellness
+            <img
+              src={svasthaLogo}
+              alt="Svastha Wellness"
+              className="h-12 w-12 rounded-full object-cover"
+            />
+            <span className="text-2xl font-bold text-primary">Svastha</span>
           </motion.div>
 
           {/* Desktop Navigation */}
@@ -51,13 +57,20 @@ const Navigation = () => {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden text-foreground"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Navigation - Show Register Button */}
+          <div className="flex md:hidden items-center gap-3">
+            <Button
+              onClick={() => scrollToSection("#register")}
+              size="sm"
+              className="bg-primary hover:bg-primary/90 transition-all duration-300 text-sm px-4 py-2"
+            >
+              Register
+            </Button>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-foreground"
+            ></button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
