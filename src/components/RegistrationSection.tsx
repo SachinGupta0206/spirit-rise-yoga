@@ -41,31 +41,41 @@ const RegistrationSection = () => {
   // ✅ Form submit logic
   const onSubmit = async (data: RegistrationForm) => {
     try {
+      // ✅ Send form data to your deployed backend API (not localhost after deploy)
       const response = await axios.post(
-        "http://localhost:5000/api/register",
+        "https://your-render-backend-url.onrender.com/api/register",
         data
       );
+
       console.log("✅ Server Response:", response.data);
 
+      // ✅ Show success message
       toast({
-        title: "Registration Successful! 🎉",
-        description: "Redirecting you to the WhatsApp group...",
+        title: "Registration Successful 🎉",
+        description:
+          "You’ve been registered successfully! Redirecting you to our WhatsApp group...",
       });
 
-      setIsSubmitted(true);
+      // ✅ Optional: reset form (if using React Hook Form)
+      // reset();
 
+      // ✅ Redirect after delay (to WhatsApp, confirmation page, etc.)
       setTimeout(() => {
         window.open(
           "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
           "_blank"
         );
       }, 2000);
-    } catch (error) {
-      console.error("❌ Error submitting form:", error);
+    } catch (error: any) {
+      console.error("❌ Registration failed:", error);
+
+      // ✅ Show error toast
       toast({
-        title: "Submission Failed",
-        description: "Please try again later.",
-        variant: "destructive",
+        title: "Registration Failed 😞",
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again later.",
+        variant: "destructive", // shows red error style if you’re using shadcn/ui toasts
       });
     }
   };

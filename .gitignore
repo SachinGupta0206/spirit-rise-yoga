@@ -29,8 +29,10 @@ dist-ssr
 .env.test.local
 .env.production.local
 
-# Backend folder (complete backend ignore)
-backend/
+# Backend specific files (not the whole folder)
+backend/.env
+backend/registrations.json
+backend/node_modules/
 
 # Lock files 
 package-lock.json
