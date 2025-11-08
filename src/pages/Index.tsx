@@ -7,6 +7,7 @@ import RegistrationSection from "@/components/RegistrationSection";
 import FAQSection from "@/components/FAQSection";
 import ScrollToTop from "@/components/ScrollToTop";
 import RegisterPopup from "@/components/RegisterPopup";
+import InstructorsSection from "@/components/InstructorsSection";
 
 const Index = () => {
   return (
@@ -17,6 +18,7 @@ const Index = () => {
       <JourneySection />
       <ScheduleSection />
       <RegistrationSection />
+      <InstructorsSection />
       <FAQSection />
       <ScrollToTop />
       <RegisterPopup />

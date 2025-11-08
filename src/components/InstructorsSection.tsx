@@ -1,31 +1,30 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import instructor1 from "@/assets/instructor-1.jpg";
-import instructor2 from "@/assets/instructor-2.jpg";
-import instructor3 from "@/assets/instructor-3.jpg";
-import instructor4 from "@/assets/instructor-4.jpg";
+import instructor1 from "@/assets/Saumya.jpg";
+import instructor3 from "@/assets/Priyanka.jpg";
+import instructor2 from "@/assets/Karishma.jpg";
 
 const InstructorsSection = () => {
   const instructors = [
     {
-      name: "Sarah Mitchell",
-      title: "Yoga & Wellness Coach",
+      name: "Saumya Gangwar",
+      title: "Advanced Asana Specialist",
       image: instructor1,
+      description:
+        "Expert in advanced yoga poses and alignment, trained in Rishikesh",
     },
     {
-      name: "Michael Chen",
-      title: "Vinyasa Flow Specialist",
+      name: "Karishma Kaintura",
+      title: "Yoga Instructor",
       image: instructor2,
+      description: "Expert in yoga alignment and stress relief techniques",
     },
     {
-      name: "Priya Sharma",
+      name: "Priyanka Mishra",
       title: "Meditation & Mindfulness Expert",
       image: instructor3,
-    },
-    {
-      name: "David Thompson",
-      title: "Restorative Yoga Master",
-      image: instructor4,
+      description:
+        "Specializes in pranayama, meditation, and stress relief techniques",
     },
   ];
 
@@ -47,7 +46,7 @@ const InstructorsSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {instructors.map((instructor, index) => (
             <motion.div
               key={instructor.name}
@@ -68,7 +67,12 @@ const InstructorsSection = () => {
                   <h3 className="text-xl font-semibold text-foreground mb-2">
                     {instructor.name}
                   </h3>
-                  <p className="text-muted-foreground">{instructor.title}</p>
+                  <p className="text-primary font-medium mb-3">
+                    {instructor.title}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {instructor.description}
+                  </p>
                 </div>
               </Card>
             </motion.div>
