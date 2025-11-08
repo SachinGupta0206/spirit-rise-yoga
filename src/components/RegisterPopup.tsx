@@ -51,12 +51,14 @@ const RegisterPopup = () => {
 
             {/* Content */}
             <div className="relative">
-              <h3 className="text-xl font-bold text-foreground mb-2 pr-6">
+              <h3 className="text-xl font-bold text-foreground mb-3 pr-6">
                 🌿 Join Our FREE 21-Day Yoga Camp
               </h3>
-              <p className="text-sm text-muted-foreground mb-1">
-                Starting November 17, 2025
-              </p>
+              <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-accent/20 rounded-lg p-3 mb-3 border border-primary/30">
+                <p className="text-lg font-bold text-primary text-center">
+                  📅 Starting November 17, 2025
+                </p>
+              </div>
               <p className="text-sm text-foreground mb-4">
                 Feel lighter, stronger & calmer — from home!
               </p>
