@@ -83,4 +83,19 @@ app.get("/", (req, res) => {
   res.send("YogaCamp Backend API is running...");
 });
 
+// 🔍 Debug endpoint
+app.get("/api/debug", (req, res) => {
+  res.json({
+    mongoUri: process.env.MONGO_URI ? "Set" : "Not Set",
+    nodeEnv: process.env.NODE_ENV,
+    mongooseState: mongoose.connection.readyState,
+    mongooseStates: {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    },
+  });
+});
+
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
