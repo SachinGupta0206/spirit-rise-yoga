@@ -11,34 +11,19 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Connect to MongoDB Atlas
+// ✅ Connect to MongoDB Atlas - Simple connection
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error("MONGO_URI environment variable is not set");
     }
 
-    const options = {
-      serverSelectionTimeoutMS: 30000, // 30 seconds
-      socketTimeoutMS: 45000, // 45 seconds
-      maxPoolSize: 10,
-      minPoolSize: 5,
-    };
-
-    await mongoose.connect(process.env.MONGO_URI, options);
+    // Simplest possible connection - no extra options
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB Atlas");
-
-    // Handle connection events
-    mongoose.connection.on("error", (err) => {
-      console.error("❌ MongoDB connection error:", err);
-    });
-
-    mongoose.connection.on("disconnected", () => {
-      console.log("⚠️ MongoDB disconnected");
-    });
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
-    // Don't exit process, let it retry
+    // Retry after 5 seconds
     setTimeout(connectDB, 5000);
   }
 };
