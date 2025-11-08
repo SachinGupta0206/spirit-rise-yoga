@@ -96,10 +96,27 @@ const RegistrationSection = () => {
 
       // Redirect to WhatsApp group after 2 seconds
       setTimeout(() => {
-        window.open(
-          "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
-          "_blank"
-        );
+        try {
+          const whatsappLink =
+            "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
+          console.log("🔗 Opening WhatsApp link:", whatsappLink);
+
+          const newWindow = window.open(whatsappLink, "_blank");
+
+          if (!newWindow) {
+            // Fallback if popup blocked
+            console.log("⚠️ Popup blocked, trying direct navigation");
+            window.location.href = whatsappLink;
+          }
+        } catch (error) {
+          console.error("❌ Error opening WhatsApp link:", error);
+          // Show fallback message
+          toast({
+            title: "Join our WhatsApp Group",
+            description:
+              "Please manually join: https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
+          });
+        }
       }, 2000);
 
       // Auto-close success message after 3 seconds
