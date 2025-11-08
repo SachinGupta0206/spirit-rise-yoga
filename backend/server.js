@@ -11,20 +11,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Connect to MongoDB Atlas - Simple connection
+// ✅ Connect to MongoDB Atlas with retry mechanism
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
       throw new Error("MONGO_URI environment variable is not set");
     }
 
-    // Simplest possible connection - no extra options
+    console.log("🔄 Attempting MongoDB connection...");
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB Atlas");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
-    // Retry after 5 seconds
-    setTimeout(connectDB, 5000);
+    console.log("🔄 Retrying connection in 10 seconds...");
+    setTimeout(connectDB, 10000); // Retry every 10 seconds
   }
 };
 
@@ -47,13 +47,6 @@ app.post("/api/register", async (req, res) => {
     console.log("📝 Registration request received:", req.body);
     console.log("🔍 MongoDB connection state:", mongoose.connection.readyState);
 
-    // Check if MongoDB is connected
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(503).json({
-        message: "Database connection not ready. Please try again.",
-      });
-    }
-
     const { name, phone, email, batch } = req.body;
 
     // Basic validation
@@ -61,6 +54,7 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ message: "Name and Email are required." });
     }
 
+    // Try to save, let mongoose handle connection state
     const registration = new Registration({
       name,
       phone: phone || "",
@@ -69,29 +63,15 @@ app.post("/api/register", async (req, res) => {
       date: new Date(),
     });
 
-    // Set timeout for save operation
-    const savePromise = registration.save();
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Save operation timeout")), 15000)
-    );
-
-    const savedRegistration = await Promise.race([savePromise, timeoutPromise]);
-    console.log("✅ Registration saved successfully:", savedRegistration);
+    await registration.save();
+    console.log("✅ Registration saved successfully:", registration);
 
     res.status(201).json({
       message: "Registration saved successfully",
-      data: savedRegistration,
+      data: registration,
     });
   } catch (err) {
     console.error("❌ Registration error:", err);
-
-    if (err.message === "Save operation timeout") {
-      return res.status(408).json({
-        message: "Request timeout. Please try again.",
-        error: "Database operation timed out",
-      });
-    }
-
     res.status(500).json({
       message: "Server error",
       error: err.message,
