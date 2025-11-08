@@ -6,6 +6,7 @@ import ScheduleSection from "@/components/ScheduleSection";
 import RegistrationSection from "@/components/RegistrationSection";
 import FAQSection from "@/components/FAQSection";
 import ScrollToTop from "@/components/ScrollToTop";
+import RegisterPopup from "@/components/RegisterPopup";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       <RegistrationSection />
       <FAQSection />
       <ScrollToTop />
+      <RegisterPopup />
 
       <footer className="bg-foreground/5 py-8">
         <div className="container mx-auto px-4 text-center">
