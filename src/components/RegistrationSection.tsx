@@ -1,8 +1,5 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,77 +7,116 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
 
-// ✅ Schema: Phone is optional but must be valid if entered
-const registrationSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(100),
-  phone: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || /^[0-9]{10}$/.test(val),
-      "Please enter a valid 10-digit phone number"
-    ),
-  email: z.string().email("Please enter a valid email address"),
-  batch: z.string().optional(), // optional now (you can make it required if needed)
-});
-
-type RegistrationForm = z.infer<typeof registrationSchema>;
-
 const RegistrationSection = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+  });
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+  });
   const { toast } = useToast();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegistrationForm>({
-    resolver: zodResolver(registrationSchema),
-  });
+  // Handle input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-  // ✅ Form submit logic
-  const onSubmit = async (data: RegistrationForm) => {
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const newErrors = {
+      name: "",
+      email: "",
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    setErrors(newErrors);
+    return !newErrors.name && !newErrors.email;
+  };
+
+  // Form submit logic
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      // ✅ Send form data to your deployed backend API (not localhost after deploy)
       const response = await axios.post(
-        "https://spirit-rise-yoga-2.onrender.com/api/register",
-        data
+        "https://spirit-rise-yoga-3.onrender.com/api/register",
+        {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       console.log("✅ Server Response:", response.data);
 
-      // ✅ Show success message
+      // Show success message
       toast({
-        title: "Registration Successful 🎉",
+        title: "🎉 Successfully Registered for the Free Yoga Camp!",
         description:
-          "You’ve been registered successfully! Redirecting you to our WhatsApp group...",
+          "Welcome to our yoga community! Check your email for details.",
       });
 
-      // ✅ Optional: reset form (if using React Hook Form)
-      // reset();
+      setIsSubmitted(true);
 
-      // ✅ Redirect after delay (to WhatsApp, confirmation page, etc.)
+      // Auto-close after 2-3 seconds
       setTimeout(() => {
-        window.open(
-          "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
-          "_blank"
-        );
-      }, 2000);
+        setIsSubmitted(false);
+        setFormData({ name: "", email: "" });
+      }, 3000);
     } catch (error: any) {
       console.error("❌ Registration failed:", error);
 
-      // ✅ Show error toast
+      // Show error message
       toast({
-        title: "Registration Failed 😞",
+        title: "⚠️ Something went wrong. Please try again.",
         description:
           error.response?.data?.message ||
-          "Something went wrong. Please try again later.",
-        variant: "destructive", // shows red error style if you’re using shadcn/ui toasts
+          "Registration failed. Please check your details and try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // ✅ Success message after submit
+  // Success message after submit
   if (isSubmitted) {
     return (
       <section
@@ -106,8 +142,7 @@ const RegistrationSection = () => {
                 Welcome to the Yoga Camp!
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                You're all set! We're redirecting you to our WhatsApp group
-                where you'll receive class links and updates.
+                🎉 Successfully Registered for the Free Yoga Camp!
               </p>
               <p className="text-sm text-muted-foreground">
                 Check your email for confirmation and additional details.
@@ -119,7 +154,7 @@ const RegistrationSection = () => {
     );
   }
 
-  // ✅ Registration form UI
+  // Registration form UI
   return (
     <section
       id="register"
@@ -149,77 +184,64 @@ const RegistrationSection = () => {
           className="max-w-2xl mx-auto"
         >
           <div className="bg-card rounded-3xl p-8 md:p-12 shadow-hover">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* ✅ Full Name */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Full Name */}
               <div>
                 <Label htmlFor="name" className="text-base">
                   Full Name *
                 </Label>
                 <Input
                   id="name"
-                  {...register("name")}
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   placeholder="Enter your full name"
                   className="mt-2"
+                  disabled={isLoading}
                 />
                 {errors.name && (
-                  <p className="text-destructive text-sm mt-1">
-                    {errors.name.message}
-                  </p>
+                  <p className="text-destructive text-sm mt-1">{errors.name}</p>
                 )}
               </div>
 
-              {/* ✅ Phone (Optional) */}
-              <div>
-                <Label htmlFor="phone" className="text-base">
-                  Phone Number (optional)
-                </Label>
-                <Input
-                  id="phone"
-                  {...register("phone")}
-                  placeholder="Enter your 10-digit phone number (optional)"
-                  className="mt-2"
-                />
-                {errors.phone && (
-                  <p className="text-destructive text-sm mt-1">
-                    {errors.phone.message}
-                  </p>
-                )}
-              </div>
-
-              {/* ✅ Email */}
+              {/* Email */}
               <div>
                 <Label htmlFor="email" className="text-base">
                   Email Address *
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
-                  {...register("email")}
+                  value={formData.email}
+                  onChange={handleInputChange}
                   placeholder="Enter your email"
                   className="mt-2"
+                  disabled={isLoading}
                 />
                 {errors.email && (
                   <p className="text-destructive text-sm mt-1">
-                    {errors.email.message}
+                    {errors.email}
                   </p>
                 )}
               </div>
 
-              {/* ✅ Info Note */}
+              {/* Info Note */}
               <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
                 <p className="text-sm text-muted-foreground">
-                  After registration, you'll receive the WhatsApp group link and
-                  class updates via email.
+                  After registration, you'll receive confirmation and class
+                  details via email.
                 </p>
               </div>
 
-              {/* ✅ Submit Button */}
+              {/* Submit Button */}
               <Button
                 type="submit"
                 size="lg"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105"
+                disabled={isLoading}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                Complete Registration
+                {isLoading ? "Registering..." : "Complete Registration"}
               </Button>
             </form>
           </div>
