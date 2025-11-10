@@ -7,16 +7,36 @@ const ScheduleSection = () => {
   const [userTimezone, setUserTimezone] = useState<string>("");
   const [isIST, setIsIST] = useState(true);
 
-  // Detect user's timezone on component mount
+  // Detect user's timezone automatically on component mount
   useEffect(() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setUserTimezone(timezone);
     setIsIST(timezone === "Asia/Kolkata" || timezone === "Asia/Calcutta");
   }, []);
 
-  // Convert IST time to user's local timezone
-  const convertTime = (istTime: string): string => {
-    if (isIST) return istTime; // No conversion needed for IST users
+  // Get timezone abbreviation
+  const getTimezoneAbbr = (): string => {
+    try {
+      const date = new Date();
+      const tzString = date.toLocaleTimeString("en-US", {
+        timeZone: userTimezone,
+        timeZoneName: "short",
+      });
+      const abbr = tzString.split(" ").pop() || "";
+      return abbr;
+    } catch (error) {
+      return "";
+    }
+  };
+
+  // Convert IST time to user's local timezone - returns object with time and timezone
+  const convertTime = (istTime: string): { time: string; timezone: string } => {
+    if (isIST) {
+      return {
+        time: istTime.toLowerCase(),
+        timezone: "IST"
+      };
+    }
 
     try {
       // Parse IST time
@@ -46,12 +66,19 @@ const ScheduleSection = () => {
         minute: "2-digit",
         hour12: true,
         timeZone: userTimezone,
-      });
+      }).toLowerCase(); // Convert AM/PM to am/pm
 
-      return localTime;
+      const tzAbbr = getTimezoneAbbr();
+      return {
+        time: localTime,
+        timezone: tzAbbr
+      };
     } catch (error) {
       console.error("Error converting time:", error);
-      return istTime;
+      return {
+        time: istTime.toLowerCase(),
+        timezone: "IST"
+      };
     }
   };
 
@@ -84,10 +111,10 @@ const ScheduleSection = () => {
             Choose a time that fits your schedule — join from anywhere
           </p>
           {!isIST && userTimezone && (
-            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mt-2">
               <Globe className="text-primary" size={16} />
               <p className="text-sm text-primary font-medium">
-                Times shown in your timezone: {userTimezone.replace(/_/g, " ")}
+                Times shown in your timezone
               </p>
             </div>
           )}
@@ -112,25 +139,26 @@ const ScheduleSection = () => {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {morningBatches.map((time, index) => (
-                    <motion.div
-                      key={time}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-card p-4 rounded-xl border border-border hover:border-primary transition-colors duration-300"
-                    >
-                      <p className="text-lg font-semibold text-foreground">
-                        {convertTime(time)}
-                      </p>
-                      {!isIST && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          ({time} IST)
+                  {morningBatches.map((time, index) => {
+                    const converted = convertTime(time);
+                    return (
+                      <motion.div
+                        key={time}
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-card p-4 rounded-xl border border-border hover:border-primary transition-colors duration-300"
+                      >
+                        <p className="text-lg font-semibold text-foreground">
+                          {converted.time}{" "}
+                          <span className="text-xs text-muted-foreground font-normal">
+                            ({converted.timezone})
+                          </span>
                         </p>
-                      )}
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </Card>
             </motion.div>
@@ -152,25 +180,26 @@ const ScheduleSection = () => {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {eveningBatches.map((time, index) => (
-                    <motion.div
-                      key={time}
-                      initial={{ opacity: 0, x: 20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-card p-4 rounded-xl border border-border hover:border-secondary transition-colors duration-300"
-                    >
-                      <p className="text-lg font-semibold text-foreground">
-                        {convertTime(time)}
-                      </p>
-                      {!isIST && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          ({time} IST)
+                  {eveningBatches.map((time, index) => {
+                    const converted = convertTime(time);
+                    return (
+                      <motion.div
+                        key={time}
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.1 }}
+                        className="bg-card p-4 rounded-xl border border-border hover:border-secondary transition-colors duration-300"
+                      >
+                        <p className="text-lg font-semibold text-foreground">
+                          {converted.time}{" "}
+                          <span className="text-xs text-muted-foreground font-normal">
+                            ({converted.timezone})
+                          </span>
                         </p>
-                      )}
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </Card>
             </motion.div>
@@ -201,6 +230,8 @@ const ScheduleSection = () => {
               </Card>
             ))}
           </motion.div>
+
+
         </div>
       </div>
     </section>
