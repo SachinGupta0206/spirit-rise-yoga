@@ -21,7 +21,7 @@ const JourneySection = () => {
       week: 3,
       icon: Wind,
       title: "Flexibility Flow",
-      description: "Expand your range of motion, ease tension, and experience peace in movement.",
+      description: "Expand your range of motion, ease tension, and experience peace in movement.",
       color: "bg-accent text-accent-foreground",
     },
   ];
