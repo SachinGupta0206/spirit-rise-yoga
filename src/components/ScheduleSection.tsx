@@ -1,8 +1,60 @@
 import { motion } from "framer-motion";
-import { Clock, MapPin, Calendar, Video } from "lucide-react";
+import { Clock, MapPin, Calendar, Video, Globe } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 
 const ScheduleSection = () => {
+  const [userTimezone, setUserTimezone] = useState<string>("");
+  const [isIST, setIsIST] = useState(true);
+
+  // Detect user's timezone on component mount
+  useEffect(() => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setUserTimezone(timezone);
+    setIsIST(timezone === "Asia/Kolkata" || timezone === "Asia/Calcutta");
+  }, []);
+
+  // Convert IST time to user's local timezone
+  const convertTime = (istTime: string): string => {
+    if (isIST) return istTime; // No conversion needed for IST users
+
+    try {
+      // Parse IST time
+      const [time, period] = istTime.split(" ");
+      const [hours, minutes] = time.split(":").map(Number);
+
+      // Convert to 24-hour format
+      let hour24 = hours;
+      if (period === "PM" && hours !== 12) hour24 += 12;
+      if (period === "AM" && hours === 12) hour24 = 0;
+
+      // Create date object in IST
+      const today = new Date();
+      const istDate = new Date(
+        Date.UTC(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          hour24 - 5, // IST is UTC+5:30
+          minutes - 30
+        )
+      );
+
+      // Format in user's timezone
+      const localTime = istDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: userTimezone,
+      });
+
+      return localTime;
+    } catch (error) {
+      console.error("Error converting time:", error);
+      return istTime;
+    }
+  };
+
   const morningBatches = ["5:30 AM", "6:15 AM", "7:00 AM", "8:30 AM"];
   const eveningBatches = ["4:30 PM", "5:30 PM", "6:30 PM", "7:30 PM"];
 
@@ -13,7 +65,10 @@ const ScheduleSection = () => {
   ];
 
   return (
-    <section id="schedule" className="py-20 bg-gradient-to-b from-background to-muted/30">
+    <section
+      id="schedule"
+      className="py-20 bg-gradient-to-b from-background to-muted/30"
+    >
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -25,9 +80,17 @@ const ScheduleSection = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Class Schedule
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             Choose a time that fits your schedule — join from anywhere
           </p>
+          {!isIST && userTimezone && (
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full">
+              <Globe className="text-primary" size={16} />
+              <p className="text-sm text-primary font-medium">
+                Times shown in your timezone: {userTimezone.replace(/_/g, " ")}
+              </p>
+            </div>
+          )}
         </motion.div>
 
         <div className="max-w-5xl mx-auto">
@@ -44,7 +107,9 @@ const ScheduleSection = () => {
                   <div className="bg-primary/10 p-3 rounded-xl">
                     <Clock className="text-primary" size={24} />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground">Morning Batches</h3>
+                  <h3 className="text-2xl font-bold text-foreground">
+                    Morning Batches
+                  </h3>
                 </div>
                 <div className="space-y-3">
                   {morningBatches.map((time, index) => (
@@ -56,7 +121,14 @@ const ScheduleSection = () => {
                       transition={{ delay: index * 0.1 }}
                       className="bg-card p-4 rounded-xl border border-border hover:border-primary transition-colors duration-300"
                     >
-                      <p className="text-lg font-semibold text-foreground">{time}</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {convertTime(time)}
+                      </p>
+                      {!isIST && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({time} IST)
+                        </p>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -75,7 +147,9 @@ const ScheduleSection = () => {
                   <div className="bg-secondary/10 p-3 rounded-xl">
                     <Clock className="text-secondary" size={24} />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground">Evening Batches</h3>
+                  <h3 className="text-2xl font-bold text-foreground">
+                    Evening Batches
+                  </h3>
                 </div>
                 <div className="space-y-3">
                   {eveningBatches.map((time, index) => (
@@ -87,7 +161,14 @@ const ScheduleSection = () => {
                       transition={{ delay: index * 0.1 }}
                       className="bg-card p-4 rounded-xl border border-border hover:border-secondary transition-colors duration-300"
                     >
-                      <p className="text-lg font-semibold text-foreground">{time}</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {convertTime(time)}
+                      </p>
+                      {!isIST && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ({time} IST)
+                        </p>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -111,8 +192,12 @@ const ScheduleSection = () => {
                 <div className="bg-primary/10 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4">
                   <detail.icon className="text-primary" size={24} />
                 </div>
-                <p className="text-sm text-muted-foreground mb-1">{detail.label}</p>
-                <p className="text-lg font-semibold text-foreground">{detail.value}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  {detail.label}
+                </p>
+                <p className="text-lg font-semibold text-foreground">
+                  {detail.value}
+                </p>
               </Card>
             ))}
           </motion.div>

@@ -66,12 +66,12 @@ const HeroSection = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-3 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Ultimate 21-Day
               <br />
               <span className="text-primary">Yoga Camp</span>
             </h1>
-            <h3 className="text-xl font-bold text-white text-foreground mb-3">
+            <h3 className="text-xl font-bold text-white text-foreground mb-6 inline-flex items-center gap-2 bg-card/40 backdrop-blur-sm px-4 py-2 rounded-sm mb-6 shadow-soft">
               Live from India{" "}
               <ReactCountryFlag
                 countryCode="IN"
@@ -102,18 +102,6 @@ const HeroSection = () => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 shadow-hover transition-all duration-300 hover:scale-105"
               >
                 Register Now
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() =>
-                  document
-                    .querySelector("#why-join")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="bg-card/90 backdrop-blur-sm border-2 border-white text-foreground hover:bg-white text-lg px-8 py-6 transition-all duration-300"
-              >
-                Learn More
               </Button>
             </motion.div>
 

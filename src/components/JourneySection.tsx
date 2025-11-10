@@ -6,22 +6,22 @@ const JourneySection = () => {
     {
       week: 1,
       icon: Sparkles,
-      title: "Detox & Cleanse",
-      description: "Improve digestion, flush toxins, and reset your energy levels.",
+      title: "Cleanse & Awaken",
+      description: "Gentle flows and breathing practices to purify your body and reawaken your inner energy.",
       color: "bg-primary/10 text-primary",
     },
     {
       week: 2,
       icon: Dumbbell,
-      title: "Core Strength",
-      description: "Strengthen your core, improve posture, and boost metabolism.",
+      title: "Strength & Stability",
+      description: "Build strength, balance, and focus through guided Hatha and Vinyasa sessions.",
       color: "bg-secondary/10 text-secondary",
     },
     {
       week: 3,
       icon: Wind,
       title: "Flexibility Flow",
-      description: "Unlock tight muscles, increase flexibility, and find peace in movement.",
+      description: "Expand your range of motion, ease tension, and experience peace in movement.",
       color: "bg-accent text-accent-foreground",
     },
   ];
@@ -58,7 +58,7 @@ const JourneySection = () => {
                 <div className={`${week.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6`}>
                   <week.icon size={32} />
                 </div>
-                
+
                 <div className="mb-4">
                   <span className="text-sm font-semibold text-primary uppercase tracking-wider">
                     Week {week.week}
@@ -67,7 +67,7 @@ const JourneySection = () => {
                     {week.title}
                   </h3>
                 </div>
-                
+
                 <p className="text-muted-foreground text-lg leading-relaxed">
                   {week.description}
                 </p>
