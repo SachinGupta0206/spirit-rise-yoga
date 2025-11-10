@@ -1,22 +1,32 @@
 import { motion } from "framer-motion";
-import { Video, Users, Calendar, PlayCircle, Utensils, Heart } from "lucide-react";
+import {
+  Video,
+  Users,
+  Calendar,
+  PlayCircle,
+  Utensils,
+  Heart,
+} from "lucide-react";
 
 const WhyJoinSection = () => {
   const benefits = [
     {
       icon: Video,
       title: "Daily Live Online Classes",
-      description: "Join from the comfort of your home with interactive sessions",
+      description:
+        "Join from the comfort of your home with interactive sessions",
     },
     {
       icon: Users,
       title: "Expert Instructors",
-      description: "Certified yoga professionals guiding you every step of the way",
+      description:
+        "Certified yoga professionals guiding you every step of the way",
     },
     {
       icon: Calendar,
       title: "Structured Weekly Themes",
-      description: "Balanced progression through detox, strength, and flexibility",
+      description:
+        "Balanced progression through detox, strength, and flexibility",
     },
     {
       icon: PlayCircle,
@@ -30,13 +40,17 @@ const WhyJoinSection = () => {
     },
     {
       icon: Heart,
-      title: "Supportive Community",
-      description: "Connect with like-minded individuals on the same journey",
+      title: "Absolutely Free",
+      description:
+        "Join our 21-Day Free Yoga Camp and discover a healthier, happier you! ✨",
     },
   ];
 
   return (
-    <section id="why-join" className="py-20 bg-gradient-to-b from-background to-muted/30">
+    <section
+      id="why-join"
+      className="py-20 bg-gradient-to-b from-background to-muted/30"
+    >
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,7 +63,8 @@ const WhyJoinSection = () => {
             Why Join This Yoga Camp?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Experience a transformative journey designed to help you achieve your wellness goals
+            Experience a transformative journey designed to help you achieve
+            your wellness goals
           </p>
         </motion.div>
 
