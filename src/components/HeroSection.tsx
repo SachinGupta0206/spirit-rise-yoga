@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Calendar, Clock } from "lucide-react";
 import heroImage from "@/assets/hero-yoga.jpg";
+import ReactCountryFlag from "react-country-flag";
 
 const HeroSection = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -22,7 +23,9 @@ const HeroSection = () => {
       if (difference > 0) {
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          hours: Math.floor(
+            (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+          ),
           minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
           seconds: Math.floor((difference % (1000 * 60)) / 1000),
         });
@@ -58,17 +61,33 @@ const HeroSection = () => {
           >
             <div className="inline-flex items-center gap-2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-soft">
               <Calendar className="text-primary" size={20} />
-              <span className="text-sm font-medium">Starting November 17, 2025</span>
+              <span className="text-sm font-medium">
+                Starting November 17, 2025
+              </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-3 leading-tight">
               Ultimate 21-Day
               <br />
               <span className="text-primary">Yoga Camp</span>
             </h1>
-
+            <h3 className="text-xl font-bold text-white text-foreground mb-3">
+              Live from India{" "}
+              <ReactCountryFlag
+                countryCode="IN"
+                svg
+                style={{ width: "0.7em", height: "0.7em" }}
+              />{" "}
+              to USA{" "}
+              <ReactCountryFlag
+                countryCode="US"
+                svg
+                style={{ width: "0.7em", height: "0.7em" }}
+              />
+            </h3>
             <p className="text-xl md:text-2xl text-white/90 mb-8 font-light">
-              A life-changing journey to feel lighter, stronger, and calmer — in just 21 days.
+              A life-changing journey to feel lighter, stronger, and calmer — in
+              just 21 days.
             </p>
 
             <motion.div
@@ -87,7 +106,11 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => document.querySelector("#why-join")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() =>
+                  document
+                    .querySelector("#why-join")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
                 className="bg-card/90 backdrop-blur-sm border-2 border-white text-foreground hover:bg-white text-lg px-8 py-6 transition-all duration-300"
               >
                 Learn More
@@ -116,7 +139,9 @@ const HeroSection = () => {
                     <div className="text-3xl md:text-4xl font-bold text-primary">
                       {String(item.value).padStart(2, "0")}
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">{item.label}</div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {item.label}
+                    </div>
                   </div>
                 ))}
               </div>
