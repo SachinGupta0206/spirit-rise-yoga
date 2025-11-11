@@ -204,14 +204,6 @@ const RegistrationSection = () => {
                 )}
               </div>
 
-              {/* Info Note */}
-              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-                <p className="text-sm text-muted-foreground">
-                  After registration, you'll receive confirmation and class
-                  details via email.
-                </p>
-              </div>
-
               {/* Submit Button */}
               <Button
                 type="submit"

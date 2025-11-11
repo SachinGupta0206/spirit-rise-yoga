@@ -44,7 +44,7 @@ const Navigation = () => {
               alt="Svastha Wellness"
               className="h-12 w-12 rounded-full object-cover"
             />
-            <span className="text-2xl font-bold text-primary">Svastha</span>
+            <span className="text-2xl font-bold text-primary">Svastha X StrongByYoga</span>
           </motion.div>
 
           {/* Desktop Navigation */}

@@ -26,7 +26,7 @@ const Index = () => {
       <footer className="bg-foreground/5 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">
-            © 2025 Svastha Wellness. All rights reserved. | Transform your life
+            © 2025 Svastha X StrongByYoga. All rights reserved. | Transform your life
             through yoga.
           </p>
         </div>
