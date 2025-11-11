@@ -33,22 +33,24 @@ const Navigation = () => {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2 md:gap-3 flex-shrink min-w-0"
           >
             <img
               src={svasthaLogo}
               alt="Svastha Wellness"
-              className="h-12 w-12 rounded-full object-cover"
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover flex-shrink-0"
             />
-            <span className="text-2xl font-bold text-primary">Svastha X StrongByYoga</span>
+            <span className="text-base sm:text-lg md:text-2xl font-bold text-primary whitespace-nowrap">
+              Svastha X StrongByYoga
+            </span>
           </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 flex-shrink-0">
             <Button
               onClick={() => scrollToSection("#register")}
               className="bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-hover"
@@ -58,7 +60,7 @@ const Navigation = () => {
           </div>
 
           {/* Mobile Navigation - Show Register Button */}
-          <div className="flex md:hidden items-center gap-3">
+          <div className="flex md:hidden items-center gap-3 flex-shrink-0">
             <Button
               onClick={() => scrollToSection("#register")}
               size="sm"
