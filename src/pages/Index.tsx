@@ -21,13 +21,12 @@ const Index = () => {
       <InstructorsSection />
       <FAQSection />
       <ScrollToTop />
-      <RegisterPopup />
 
       <footer className="bg-foreground/5 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">
-            © 2025 Svastha X StrongByYoga. All rights reserved. | Transform your life
-            through yoga.
+            © 2025 Svastha X StrongByYoga. All rights reserved. | Transform your
+            life through yoga.
           </p>
         </div>
       </footer>

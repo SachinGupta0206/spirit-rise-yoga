@@ -49,16 +49,6 @@ const Navigation = () => {
             </span>
           </motion.div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8 flex-shrink-0">
-            <Button
-              onClick={() => scrollToSection("#register")}
-              className="bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-hover"
-            >
-              Register Now
-            </Button>
-          </div>
-
           {/* Mobile Navigation - Show Register Button */}
           <div className="flex md:hidden items-center gap-3 flex-shrink-0">
             <Button

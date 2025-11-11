@@ -68,6 +68,50 @@ const RegistrationSection = () => {
   };
 
   // Form submit logic
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (!validateForm()) {
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+
+  //   try {
+  //     const response = await axios.post(
+  //       "https://spirit-rise-yoga-3.onrender.com/api/register",
+  //       {
+  //         name: formData.name.trim(),
+  //         email: formData.email.trim(),
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     console.log("✅ Server Response:", response.data);
+
+  //     // Show success modal
+  //     setIsModalOpen(true);
+  //     setFormData({ name: "", email: "" });
+  //   } catch (error: any) {
+  //     console.error("❌ Registration failed:", error);
+
+  //     // Show error message
+  //     toast({
+  //       title: "⚠️ Something went wrong. Please try again.",
+  //       description:
+  //         error.response?.data?.message ||
+  //         "Registration failed. Please check your details and try again.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -77,33 +121,83 @@ const RegistrationSection = () => {
 
     setIsLoading(true);
 
+    const registrationData = {
+      name: formData.name.trim(),
+      email: formData.email.trim(),
+    };
+
     try {
-      const response = await axios.post(
-        "https://spirit-rise-yoga-3.onrender.com/api/register",
-        {
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      // Send to BOTH endpoints simultaneously
+      const results = await Promise.allSettled([
+        // Old backend endpoint
+        axios.post(
+          "https://spirit-rise-yoga-3.onrender.com/api/register",
+          registrationData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        ),
+        // New Google Apps Script webhook
+        axios.post(
+          "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjMmjydMjWDCr3guw252R63EBfxGxzNBbdaGDS-xwCJWuAUxcqiUi7YkEoo5WdRf0G3UthXrL8JwVe3GIPv4NQ6UT5lgXruFuU541kdtbIHmp9xfwyF4ryWoNm5UeZ3H-KxINsaIhQcunbI1GB0oA93a8xsATthlPVs7GQOex7MRnWwyQhze4wE8EzAbylDHnP-Qg6TEpY7_b1KRuLB28haT6jDxFYe8jle9YsfSaRUCaV6hokzdaeIc25XMn9ovwkgOB9nB7wWxxS4N_38RW8lgCKxSMxmt7c3IlM_0HO641GGymCXUqPW5g4vEQ&lib=M2vNyyvQD1EbOwtfPcwYK8wUC-3XS2GZ-",
+          registrationData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        ),
+      ]);
+
+      // Check results
+      const [oldEndpointResult, googleScriptResult] = results;
+
+      // Log results for debugging
+      console.log(
+        "✅ Old Endpoint:",
+        oldEndpointResult.status === "fulfilled" ? "Success" : "Failed"
+      );
+      console.log(
+        "✅ Google Script:",
+        googleScriptResult.status === "fulfilled" ? "Success" : "Failed"
       );
 
-      console.log("✅ Server Response:", response.data);
+      if (oldEndpointResult.status === "fulfilled") {
+        console.log("Old Backend Response:", oldEndpointResult.value.data);
+      }
+      if (googleScriptResult.status === "fulfilled") {
+        console.log("Google Script Response:", googleScriptResult.value.data);
+      }
 
-      // Show success modal
-      setIsModalOpen(true);
-      setFormData({ name: "", email: "" });
+      // Show success modal if at least one succeeded
+      if (
+        oldEndpointResult.status === "fulfilled" ||
+        googleScriptResult.status === "fulfilled"
+      ) {
+        setIsModalOpen(true);
+        setFormData({ name: "", email: "" });
+
+        // Optional: Show warning if one failed
+        if (
+          oldEndpointResult.status === "rejected" ||
+          googleScriptResult.status === "rejected"
+        ) {
+          console.warn(
+            "⚠️ One of the endpoints failed, but registration was recorded"
+          );
+        }
+      } else {
+        // Both failed
+        throw new Error("Both registration endpoints failed");
+      }
     } catch (error: any) {
       console.error("❌ Registration failed:", error);
 
-      // Show error message
       toast({
         title: "⚠️ Something went wrong. Please try again.",
         description:
-          error.response?.data?.message ||
           "Registration failed. Please check your details and try again.",
         variant: "destructive",
       });
@@ -114,14 +208,14 @@ const RegistrationSection = () => {
 
   const handleJoinWhatsApp = () => {
     const whatsappLink = "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
-    
+
     try {
       const newWindow = window.open(whatsappLink, "_blank");
-      
+
       if (!newWindow) {
         window.location.href = whatsappLink;
       }
-      
+
       setIsModalOpen(false);
     } catch (error) {
       console.error("❌ Error opening WhatsApp link:", error);
@@ -233,31 +327,56 @@ const RegistrationSection = () => {
               </motion.div>
             </div>
             <DialogTitle className="text-center text-2xl">
-              🎉 Registration Successful!
+              ✅ Registration Successful!
+
             </DialogTitle>
-            <DialogDescription className="text-center text-base pt-2">
-              Welcome to the Ultimate 21-Day Yoga Camp!
+            <DialogDescription className="text-gray-600 text-base leading-relaxed pt-3">
+              You’re officially part of the
+              <span className="text-primary font-semibold"> Ultimate 21-Day Yoga Camp! 🧘‍♀️</span>
               <br />
-              Join our WhatsApp group to get started.
+              Get ready for a beautiful journey toward{" "}
+              <span className="font-medium">strength, calmness, and inner peace 🌿</span>
             </DialogDescription>
+            {/* Divider */}
+            <div className="my-5 border-t border-gray-200" />
+
+            {/* WhatsApp Section */}
+            <div className="space-y-3">
+              <p className="text-gray-800 font-medium">
+                📢 <span className="font-semibold">Important Next Step — Don’t Skip!</span>
+              </p>
+              <p className="text-sm text-gray-600">
+                All Zoom links, reminders, and daily updates will be shared only in our official WhatsApp group.
+              </p>
+
+              <Button
+                onClick={handleJoinWhatsApp}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-medium"
+
+              >
+                🟢 Join WhatsApp Group
+              </Button>
+            </div>
+
+            {/* Optional App Section */}
+            <div className="space-y-3 mt-6">
+              <p className="text-gray-800 font-medium">💡 Optional: Stay Connected Anywhere</p>
+              <p className="text-sm text-gray-600">
+                Download our <span className="font-semibold">Svastha App</span> to track your yoga progress,
+                join live sessions, and form new habits easily 📲
+              </p>
+
+              <Button
+                variant="outline"
+                className="w-full font-medium"
+                onClick={() => window.open("http://svastha.fit/download", "_blank")}
+              >
+                📱 Download App
+              </Button>
+            </div>
+
           </DialogHeader>
-          <div className="flex flex-col gap-4 pt-4">
-            <Button
-              onClick={handleJoinWhatsApp}
-              size="lg"
-              className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105"
-            >
-              Join WhatsApp Group
-            </Button>
-            <Button
-              onClick={() => setIsModalOpen(false)}
-              variant="outline"
-              size="lg"
-              className="w-full"
-            >
-              I'll Join Later
-            </Button>
-          </div>
+
         </DialogContent>
       </Dialog>
     </section>
