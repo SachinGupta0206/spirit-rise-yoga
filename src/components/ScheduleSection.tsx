@@ -34,7 +34,7 @@ const ScheduleSection = () => {
     if (isIST) {
       return {
         time: istTime.toLowerCase(),
-        timezone: "IST"
+        timezone: "IST",
       };
     }
 
@@ -61,23 +61,25 @@ const ScheduleSection = () => {
       );
 
       // Format in user's timezone
-      const localTime = istDate.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: userTimezone,
-      }).toLowerCase(); // Convert AM/PM to am/pm
+      const localTime = istDate
+        .toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: userTimezone,
+        })
+        .toLowerCase(); // Convert AM/PM to am/pm
 
       const tzAbbr = getTimezoneAbbr();
       return {
         time: localTime,
-        timezone: tzAbbr
+        timezone: tzAbbr,
       };
     } catch (error) {
       console.error("Error converting time:", error);
       return {
         time: istTime.toLowerCase(),
-        timezone: "IST"
+        timezone: "IST",
       };
     }
   };
@@ -139,7 +141,7 @@ const ScheduleSection = () => {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {morningBatches.map((time, index) => {
+                  {eveningBatches.map((time, index) => {
                     const converted = convertTime(time);
                     return (
                       <motion.div
@@ -180,7 +182,7 @@ const ScheduleSection = () => {
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {eveningBatches.map((time, index) => {
+                  {morningBatches.map((time, index) => {
                     const converted = convertTime(time);
                     return (
                       <motion.div
@@ -230,8 +232,6 @@ const ScheduleSection = () => {
               </Card>
             ))}
           </motion.div>
-
-
         </div>
       </div>
     </section>
