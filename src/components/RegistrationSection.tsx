@@ -6,9 +6,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2 } from "lucide-react";
 import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const RegistrationSection = () => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -86,44 +93,9 @@ const RegistrationSection = () => {
 
       console.log("✅ Server Response:", response.data);
 
-      // Show success message
-      toast({
-        title: "🎉 Successfully Registered for the Free Yoga Camp!",
-        description: "Redirecting you to our WhatsApp group...",
-      });
-
-      setIsSubmitted(true);
-
-      // Redirect to WhatsApp group after 2 seconds
-      setTimeout(() => {
-        try {
-          const whatsappLink =
-            "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
-          console.log("🔗 Opening WhatsApp link:", whatsappLink);
-
-          const newWindow = window.open(whatsappLink, "_blank");
-
-          if (!newWindow) {
-            // Fallback if popup blocked
-            console.log("⚠️ Popup blocked, trying direct navigation");
-            window.location.href = whatsappLink;
-          }
-        } catch (error) {
-          console.error("❌ Error opening WhatsApp link:", error);
-          // Show fallback message
-          toast({
-            title: "Join our WhatsApp Group",
-            description:
-              "Please manually join: https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN",
-          });
-        }
-      }, 2000);
-
-      // Auto-close success message after 3 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setFormData({ name: "", email: "" });
-      }, 3000);
+      // Show success modal
+      setIsModalOpen(true);
+      setFormData({ name: "", email: "" });
     } catch (error: any) {
       console.error("❌ Registration failed:", error);
 
@@ -140,43 +112,25 @@ const RegistrationSection = () => {
     }
   };
 
-  // Success message after submit
-  if (isSubmitted) {
-    return (
-      <section
-        id="register"
-        className="py-20 bg-gradient-to-b from-background to-primary/5"
-      >
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <div className="bg-card rounded-3xl p-12 shadow-hover">
-              <motion.div
-                initial={{ rotate: 0 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1 }}
-                className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6"
-              >
-                <CheckCircle2 className="text-primary" size={48} />
-              </motion.div>
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Welcome to the Yoga Camp!
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                🎉 Successfully Registered for the Free Yoga Camp!
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Check your email for confirmation and additional details.
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-    );
-  }
+  const handleJoinWhatsApp = () => {
+    const whatsappLink = "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
+    
+    try {
+      const newWindow = window.open(whatsappLink, "_blank");
+      
+      if (!newWindow) {
+        window.location.href = whatsappLink;
+      }
+      
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("❌ Error opening WhatsApp link:", error);
+      toast({
+        title: "Join our WhatsApp Group",
+        description: "Please manually join: " + whatsappLink,
+      });
+    }
+  };
 
   // Registration form UI
   return (
@@ -271,6 +225,49 @@ const RegistrationSection = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Success Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex justify-center mb-4">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center"
+              >
+                <CheckCircle2 className="text-primary" size={40} />
+              </motion.div>
+            </div>
+            <DialogTitle className="text-center text-2xl">
+              🎉 Registration Successful!
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              Welcome to the Ultimate 21-Day Yoga Camp!
+              <br />
+              Join our WhatsApp group to get started.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 pt-4">
+            <Button
+              onClick={handleJoinWhatsApp}
+              size="lg"
+              className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105"
+            >
+              Join WhatsApp Group
+            </Button>
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              I'll Join Later
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
