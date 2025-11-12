@@ -33,15 +33,13 @@ const FAQSection = () => {
       answer:
         "Please inform your instructor before the first session. They will provide personalized modifications to ensure your practice is safe and beneficial for your specific needs.",
     },
-    {
-      question: "Is there a refund policy?",
-      answer:
-        "We offer a full refund if you cancel within 48 hours of registration. After that, partial refunds may be available depending on when you cancel. Please contact us for more details.",
-    },
   ];
 
   return (
-    <section id="faqs" className="py-20 bg-gradient-to-b from-muted/30 to-background">
+    <section
+      id="faqs"
+      className="py-20 bg-gradient-to-b from-muted/30 to-background"
+    >
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
