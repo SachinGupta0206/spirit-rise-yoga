@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import instructor1 from "@/assets/Saumya.jpg";
-import instructor3 from "@/assets/Priyanka.jpg";
+import instructor3 from "@/assets/Mudit.jpg";
 import instructor2 from "@/assets/Karishma.jpg";
 
 const InstructorsSection = () => {
@@ -20,7 +20,7 @@ const InstructorsSection = () => {
       description: "Expert in yoga alignment and stress relief techniques",
     },
     {
-      name: "Priyanka Mishra",
+      name: "Mudit Malviya",
       title: "Meditation & Mindfulness Expert",
       image: instructor3,
       description:
