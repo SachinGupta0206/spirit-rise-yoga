@@ -14,7 +14,7 @@ const HeroSection = () => {
   });
 
   useEffect(() => {
-    const targetDate = new Date("2025-11-17T00:00:00").getTime();
+    const targetDate = new Date("2026-01-05T00:00:00").getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -62,7 +62,7 @@ const HeroSection = () => {
             <div className="inline-flex items-center gap-2 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-full mb-6 shadow-soft">
               <Calendar className="text-primary" size={20} />
               <span className="text-sm font-medium">
-                Starting November 17, 2025
+                Starting January 05, 2026
               </span>
             </div>
 
