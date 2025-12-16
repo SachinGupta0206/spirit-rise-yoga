@@ -49,11 +49,13 @@ const RegistrationSection = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     countryCode: "+91",
     phone: "",
   });
   const [errors, setErrors] = useState({
     name: "",
+    email: "",
     phone: "",
   });
   const { toast } = useToast();
@@ -75,12 +77,20 @@ const RegistrationSection = () => {
   };
 
   const validateForm = () => {
-    const newErrors = { name: "", phone: "" };
+    const newErrors = { name: "", email: "", phone: "" };
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
+    }
+
+    // Email validation (optional field)
+    if (formData.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        newErrors.email = "Please enter a valid email address";
+      }
     }
 
     if (!formData.phone.trim()) {
@@ -92,7 +102,7 @@ const RegistrationSection = () => {
     }
 
     setErrors(newErrors);
-    return !newErrors.name && !newErrors.phone;
+    return !newErrors.name && !newErrors.email && !newErrors.phone;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,6 +116,7 @@ const RegistrationSection = () => {
 
       const { error } = await supabase.from("yoga_registrations").insert({
         name: formData.name.trim(),
+        email: formData.email.trim() || null,
         phone: fullPhone,
       });
 
@@ -124,7 +135,7 @@ const RegistrationSection = () => {
 
       setIsModalOpen(true);
       setModalStep(1);
-      setFormData({ name: "", countryCode: "+91", phone: "" });
+      setFormData({ name: "", email: "", countryCode: "+91", phone: "" });
     } catch (error) {
       console.error("Registration failed:", error);
       toast({
@@ -197,6 +208,25 @@ const RegistrationSection = () => {
                 />
                 {errors.name && (
                   <p className="text-destructive text-sm mt-1">{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-base">
+                  Email Address (Optional)
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email address"
+                  className="mt-2"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p className="text-destructive text-sm mt-1">{errors.email}</p>
                 )}
               </div>
 
