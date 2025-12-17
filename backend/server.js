@@ -26,97 +26,29 @@ app.get("/", (req, res) => {
   res.send("YogaCamp Backend API is running with Supabase + Firebase...");
 });
 
-// ✅ Check if user is already registered for yoga camp
-app.post("/api/check-registration", async (req, res) => {
+// ✅ Simple registration - directly store in yoga_registrations table
+app.post("/api/register", async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { name, phone, email } = req.body;
 
-    if (!phone) {
-      return res.status(400).json({ error: "Phone number is required" });
+    if (!name || !phone) {
+      return res.status(400).json({ error: "Name and phone are required" });
     }
 
-    console.log("🔍 Checking registration status for phone:", phone);
-
-    const { data: registration, error } = await supabase
-      .from("yoga_registrations")
-      .select("name, phone, created_at")
-      .eq("phone", phone)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("❌ Supabase error:", error);
-      return res.status(500).json({ error: "Database error" });
-    }
-
-    res.json({
-      registered: !!registration,
-      name: registration?.name,
-      phone: registration?.phone,
-      registered_at: registration?.created_at,
-    });
-  } catch (err) {
-    console.error("❌ Check registration error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ✅ Check if user exists in Svastha database
-app.post("/api/check-user", async (req, res) => {
-  try {
-    const { phone } = req.body;
-
-    if (!phone) {
-      return res.status(400).json({ error: "Phone number is required" });
-    }
-
-    console.log("🔍 Checking user existence for phone:", phone);
-
-    const { data: user, error } = await supabase
-      .from("profiles")
-      .select("id, full_name, phone, email")
-      .eq("phone", phone)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("❌ Supabase error:", error);
-      return res.status(500).json({ error: "Database error" });
-    }
-
-    res.json({
-      exists: !!user,
-      user_id: user?.id,
-      name: user?.full_name,
-      email: user?.email,
-    });
-  } catch (err) {
-    console.error("❌ Check user error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ✅ Register existing user (no OTP needed)
-app.post("/api/register-existing", async (req, res) => {
-  try {
-    const { phone, user_id, name, email } = req.body;
-
-    if (!phone || !user_id || !name) {
-      return res
-        .status(400)
-        .json({ error: "Phone, user_id, and name are required" });
-    }
+    console.log("📝 Registering user:", { name, phone, email });
 
     // Check if already registered
     const { data: existingRegistration } = await supabase
       .from("yoga_registrations")
-      .select("id")
+      .select("id, name")
       .eq("phone", phone)
       .single();
 
     if (existingRegistration) {
-      console.log("✅ User already registered, returning success");
+      console.log("✅ User already registered");
       return res.json({
         success: true,
-        message: "Already registered for yoga camp",
+        message: `${existingRegistration.name} is already registered for yoga camp`,
         already_registered: true,
       });
     }
@@ -126,7 +58,6 @@ app.post("/api/register-existing", async (req, res) => {
       name,
       phone,
       email: email || null,
-      user_id,
     });
 
     if (error) {
@@ -134,99 +65,13 @@ app.post("/api/register-existing", async (req, res) => {
       return res.status(500).json({ error: "Failed to register" });
     }
 
-    res.json({ success: true, message: "Registration successful" });
-  } catch (err) {
-    console.error("❌ Register existing user error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ✅ Send OTP for new users
-app.post("/api/send-otp", async (req, res) => {
-  try {
-    const { phone } = req.body;
-
-    if (!phone) {
-      return res.status(400).json({ error: "Phone number is required" });
-    }
-
-    console.log("📱 Sending OTP to:", phone);
-
-    // Simulate OTP sending (replace with real SMS/Firebase in production)
+    console.log("✅ Registration successful");
     res.json({
       success: true,
-      message: "OTP sent successfully",
+      message: `${name} successfully registered for yoga camp!`,
     });
   } catch (err) {
-    console.error("❌ Send OTP error:", err);
-    res.status(500).json({ error: "Failed to send OTP" });
-  }
-});
-
-// ✅ Verify OTP and register new user
-app.post("/api/verify-and-register", async (req, res) => {
-  try {
-    const { phone, otp, name, email } = req.body;
-
-    if (!phone || !otp || !name) {
-      return res
-        .status(400)
-        .json({ error: "Phone, OTP, and name are required" });
-    }
-
-    console.log("🔐 Verifying OTP for:", phone);
-
-    // Simulate OTP verification (accept any 6-digit OTP)
-    if (!/^\d{6}$/.test(otp)) {
-      return res.status(400).json({ error: "Invalid OTP format" });
-    }
-
-    console.log("✅ OTP verified, creating user...");
-
-    // Create user in profiles table
-    const { data: newUser, error: userError } = await supabase
-      .from("profiles")
-      .insert({
-        phone,
-        full_name: name,
-        email: email || null,
-        membership_type: "basic",
-        join_date: new Date().toISOString().split("T")[0],
-        registration_country: "IN",
-        registration_currency: "INR",
-      })
-      .select()
-      .single();
-
-    if (userError) {
-      console.error("❌ User creation error:", userError);
-      return res.status(500).json({ error: "Failed to create user" });
-    }
-
-    // Register for yoga camp
-    const { error: registrationError } = await supabase
-      .from("yoga_registrations")
-      .insert({
-        name,
-        phone,
-        email: email || null,
-        user_id: newUser.id,
-      });
-
-    if (registrationError) {
-      console.error("❌ Yoga registration error:", registrationError);
-      return res
-        .status(500)
-        .json({ error: "Failed to register for yoga camp" });
-    }
-
-    res.json({
-      success: true,
-      user_id: newUser.id,
-      message: "User created and registered successfully",
-    });
-  } catch (err) {
-    console.error("❌ Verify and register error:", err);
+    console.error("❌ Registration error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

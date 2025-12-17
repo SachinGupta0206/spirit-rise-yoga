@@ -1,4 +1,4 @@
--- Create yoga_registrations table in Supabase
+-- Simple yoga_registrations table for Supabase
 -- Run this in your Supabase SQL editor
 
 CREATE TABLE IF NOT EXISTS yoga_registrations (
@@ -6,34 +6,15 @@ CREATE TABLE IF NOT EXISTS yoga_registrations (
   name TEXT NOT NULL,
   phone TEXT NOT NULL UNIQUE,
   email TEXT,
-  user_id UUID REFERENCES users(id), -- Links to existing Svastha users table
-  whatsapp_joined BOOLEAN DEFAULT FALSE,
-  app_installed BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create index for faster queries
 CREATE INDEX IF NOT EXISTS idx_yoga_registrations_phone ON yoga_registrations(phone);
-CREATE INDEX IF NOT EXISTS idx_yoga_registrations_user_id ON yoga_registrations(user_id);
 
--- Enable Row Level Security (optional, can be disabled for now)
+-- Enable Row Level Security (optional)
 ALTER TABLE yoga_registrations ENABLE ROW LEVEL SECURITY;
 
--- Create policy to allow all operations (adjust as needed)
+-- Create policy to allow all operations
 CREATE POLICY "Allow all operations on yoga_registrations" ON yoga_registrations
 FOR ALL USING (true);
-
--- Add trigger for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_yoga_registrations_updated_at 
-    BEFORE UPDATE ON yoga_registrations 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
