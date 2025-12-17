@@ -14,8 +14,16 @@ const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
       ? ["https://spiritriseyoga.com", "https://campaign.svastha.fit"]
-      : ["http://localhost:5173", "http://localhost:3000"],
+      : [
+          "http://localhost:5173",
+          "http://localhost:3000",
+          "http://localhost:8080",
+          "http://127.0.0.1:8080",
+        ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200, // For legacy browser support
 };
 
 app.use(cors(corsOptions));
@@ -62,13 +70,10 @@ app.post("/api/register", async (req, res) => {
     }
 
     // Register for yoga camp
-    // Generate a unique dummy phone since phone is required in current table structure
-    const dummyPhone = `+91${Date.now().toString().slice(-10)}`;
-
     const { error } = await supabase.from("yoga_registrations").insert({
       name,
       email,
-      phone: dummyPhone, // Generate dummy phone since column is NOT NULL UNIQUE
+      phone: null, // Phone is now optional
       user_id: null, // Not linking to users table for now
       whatsapp_joined: false,
       app_installed: false,
