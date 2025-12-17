@@ -66,11 +66,23 @@ const HeroSection = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <motion.h1
+              className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               Ultimate 21-Day
               <br />
-              <span className="text-primary">Yoga Camp</span>
-            </h1>
+              <motion.span
+                className="text-primary inline-block"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                Yoga Camp
+              </motion.span>
+            </motion.h1>
             <h3 className="text-xl font-bold text-white text-foreground mb-6 inline-flex items-center gap-2 bg-card/40 backdrop-blur-sm px-4 py-2 rounded-sm mb-6 shadow-soft">
               Live from India{" "}
               <ReactCountryFlag
@@ -96,13 +108,30 @@ const HeroSection = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             >
-              <Button
-                size="lg"
-                onClick={scrollToRegister}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 shadow-hover transition-all duration-300 hover:scale-105"
+              <motion.div
+                animate={{
+                  scale: [1, 1.05, 1],
+                  boxShadow: [
+                    "0 0 0 0 rgba(156, 35, 55, 0)",
+                    "0 0 0 10px rgba(156, 35, 55, 0.2)",
+                    "0 0 0 0 rgba(156, 35, 55, 0)"
+                  ]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 1
+                }}
+                className="inline-block rounded-lg"
               >
-                Register Now
-              </Button>
+                <Button
+                  size="lg"
+                  onClick={scrollToRegister}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 shadow-hover transition-all duration-300 hover:scale-110"
+                >
+                  Register Now
+                </Button>
+              </motion.div>
             </motion.div>
 
             {/* Countdown Timer */}
@@ -122,21 +151,59 @@ const HeroSection = () => {
                   { label: "Hours", value: timeLeft.hours },
                   { label: "Minutes", value: timeLeft.minutes },
                   { label: "Seconds", value: timeLeft.seconds },
-                ].map((item) => (
-                  <div key={item.label} className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold text-primary">
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    className="text-center"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + index * 0.1, duration: 0.5 }}
+                  >
+                    <motion.div
+                      className="text-3xl md:text-4xl font-bold text-primary"
+                      key={item.value}
+                      initial={{ scale: 1.2, opacity: 0.5 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
                       {String(item.value).padStart(2, "0")}
-                    </div>
+                    </motion.div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {item.label}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
           </motion.div>
         </div>
       </div>
+
+      {/* Floating decorative elements */}
+      <motion.div
+        className="absolute top-20 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl"
+        animate={{
+          y: [0, -20, 0],
+          opacity: [0.3, 0.6, 0.3]
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-40 right-10 w-32 h-32 bg-secondary/10 rounded-full blur-xl"
+        animate={{
+          y: [0, 20, 0],
+          opacity: [0.2, 0.5, 0.2]
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      <motion.div
+        className="absolute top-1/3 right-1/4 w-16 h-16 bg-white/5 rounded-full blur-lg"
+        animate={{
+          x: [0, 15, 0],
+          y: [0, -10, 0]
+        }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
 
       {/* Decorative gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />

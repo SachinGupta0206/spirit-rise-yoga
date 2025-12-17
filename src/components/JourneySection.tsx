@@ -48,21 +48,43 @@ const JourneySection = () => {
           {weeks.map((week, index) => (
             <motion.div
               key={week.week}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
+              initial={{ opacity: 0, y: 60, rotateX: -15 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.7,
+                delay: index * 0.25,
+                type: "spring",
+                stiffness: 80
+              }}
+              whileHover={{
+                y: -8,
+                transition: { duration: 0.2 }
+              }}
               className="relative"
             >
               <div className="bg-card rounded-3xl p-8 shadow-soft hover:shadow-hover transition-all duration-300 h-full">
-                <div className={`${week.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6`}>
+                <motion.div
+                  className={`${week.color} w-16 h-16 rounded-2xl flex items-center justify-center mb-6`}
+                  initial={{ scale: 0, rotate: -180 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.25 + 0.3, duration: 0.5, type: "spring" }}
+                  whileHover={{ scale: 1.1, rotate: 10 }}
+                >
                   <week.icon size={32} />
-                </div>
+                </motion.div>
 
                 <div className="mb-4">
-                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+                  <motion.span
+                    className="text-sm font-semibold text-primary uppercase tracking-wider"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.25 + 0.4 }}
+                  >
                     Week {week.week}
-                  </span>
+                  </motion.span>
                   <h3 className="text-2xl font-bold text-foreground mt-2">
                     {week.title}
                   </h3>
@@ -73,9 +95,15 @@ const JourneySection = () => {
                 </p>
               </div>
 
-              {/* Connector line for desktop */}
+              {/* Animated Connector line for desktop */}
               {index < weeks.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border" />
+                <motion.div
+                  className="hidden md:block absolute top-1/2 -right-4 h-0.5 bg-primary/30"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: 32 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.25 + 0.5, duration: 0.4 }}
+                />
               )}
             </motion.div>
           ))}

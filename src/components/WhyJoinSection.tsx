@@ -72,15 +72,29 @@ const WhyJoinSection = () => {
           {benefits.map((benefit, index) => (
             <motion.div
               key={benefit.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-card rounded-2xl p-6 shadow-soft hover:shadow-hover transition-all duration-300 hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+                type: "spring",
+                stiffness: 100
+              }}
+              whileHover={{
+                y: -10,
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+              className="bg-card rounded-2xl p-6 shadow-soft hover:shadow-hover transition-shadow duration-300"
             >
-              <div className="bg-primary/10 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+              <motion.div
+                className="bg-primary/10 w-14 h-14 rounded-xl flex items-center justify-center mb-4"
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.5 }}
+              >
                 <benefit.icon className="text-primary" size={28} />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
                 {benefit.title}
               </h3>
