@@ -70,24 +70,42 @@ VITE_API_BASE_URL=https://api.spiritriseyoga.com/api
 
 ## Deployment Platforms
 
-### Vercel (Recommended for Frontend)
+### Frontend Deployment (Vercel/Netlify)
 
-1. Connect GitHub repository
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push
+**Vercel (Recommended):**
 
-### Netlify
+1. Connect GitHub repository (root folder)
+2. Framework: Vite
+3. Build command: `npm run build`
+4. Output directory: `dist`
+5. Set environment variables in Vercel dashboard
+
+**Netlify:**
 
 1. Connect GitHub repository
 2. Build command: `npm run build`
 3. Publish directory: `dist`
 4. Set environment variables
 
-### Railway/Heroku (For Backend)
+### Backend Deployment (Separate)
 
-1. Deploy backend separately
+**Option 1: Vercel Functions**
+
+1. Create separate Vercel project for `/backend` folder
+2. Use `backend/vercel.json` configuration
+3. Set environment variables in Vercel dashboard
+
+**Option 2: Railway/Heroku**
+
+1. Deploy backend folder separately
 2. Set environment variables
 3. Update `VITE_API_BASE_URL` in frontend
+
+**Option 3: Render/DigitalOcean**
+
+1. Deploy as Node.js app
+2. Start command: `npm start`
+3. Set environment variables
 
 ## Security Notes
 
