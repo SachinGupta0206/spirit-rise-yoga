@@ -1,102 +1,102 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { supabase } from "./supabase.js";
+// Firebase admin import removed - not currently used
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
-
-// ✅ Connect to MongoDB Atlas with retry mechanism
-const connectDB = async () => {
-  try {
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI environment variable is not set");
-    }
-
-    console.log("🔄 Attempting MongoDB connection...");
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB Atlas");
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
-    console.log("🔄 Retrying connection in 10 seconds...");
-    setTimeout(connectDB, 10000); // Retry every 10 seconds
-  }
+// CORS configuration for production
+const corsOptions = {
+  origin:
+    process.env.NODE_ENV === "production"
+      ? ["https://spiritriseyoga.com", "https://campaign.svastha.fit"]
+      : ["http://localhost:5173", "http://localhost:3000"],
+  credentials: true,
 };
 
-connectDB();
-
-// ✅ Schema
-const registrationSchema = new mongoose.Schema({
-  name: String,
-  phone: String,
-  email: String,
-  batch: String,
-  date: { type: Date, default: Date.now },
-});
-
-const Registration = mongoose.model("Registration", registrationSchema);
-
-// ✅ Route
-app.post("/api/register", async (req, res) => {
-  try {
-    console.log("📝 Registration request received:", req.body);
-    console.log("🔍 MongoDB connection state:", mongoose.connection.readyState);
-
-    const { name, phone, email, batch } = req.body;
-
-    // Basic validation
-    if (!name || !email) {
-      return res.status(400).json({ message: "Name and Email are required." });
-    }
-
-    // Try to save, let mongoose handle connection state
-    const registration = new Registration({
-      name,
-      phone: phone || "",
-      email,
-      batch: batch || "",
-      date: new Date(),
-    });
-
-    await registration.save();
-    console.log("✅ Registration saved successfully:", registration);
-
-    res.status(201).json({
-      message: "Registration saved successfully",
-      data: registration,
-    });
-  } catch (err) {
-    console.error("❌ Registration error:", err);
-    res.status(500).json({
-      message: "Server error",
-      error: err.message,
-    });
-  }
-});
+app.use(cors(corsOptions));
+app.use(express.json());
 
 // ✅ Base route for health check
 app.get("/", (req, res) => {
-  res.send("YogaCamp Backend API is running...");
+  res.send("YogaCamp Backend API is running with Supabase + Firebase...");
+});
+
+// ✅ Simple registration - directly store in yoga_registrations table
+app.post("/api/register", async (req, res) => {
+  try {
+    const { name, phone, email } = req.body;
+
+    if (!name || !phone) {
+      return res.status(400).json({ error: "Name and phone are required" });
+    }
+
+    console.log("📝 Registering user:", { name, phone, email });
+
+    // Check if already registered
+    const { data: existingRegistration } = await supabase
+      .from("yoga_registrations")
+      .select("id, name")
+      .eq("phone", phone)
+      .single();
+
+    if (existingRegistration) {
+      console.log("✅ User already registered");
+      return res.json({
+        success: true,
+        message: `${existingRegistration.name} is already registered for yoga camp`,
+        already_registered: true,
+      });
+    }
+
+    // Register for yoga camp
+    const { error } = await supabase.from("yoga_registrations").insert({
+      name,
+      phone,
+      email: email || null,
+    });
+
+    if (error) {
+      console.error("❌ Registration error:", error);
+      return res.status(500).json({ error: "Failed to register" });
+    }
+
+    console.log("✅ Registration successful");
+    res.json({
+      success: true,
+      message: `${name} successfully registered for yoga camp!`,
+    });
+  } catch (err) {
+    console.error("❌ Registration error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // 🔍 Debug endpoint
 app.get("/api/debug", (req, res) => {
   res.json({
-    mongoUri: process.env.MONGO_URI ? "Set" : "Not Set",
+    supabaseUrl: process.env.SUPABASE_URL ? "Set" : "Not Set",
+    supabaseKey: process.env.SUPABASE_ANON_KEY ? "Set" : "Not Set",
+    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? "Set" : "Not Set",
     nodeEnv: process.env.NODE_ENV,
-    mongooseState: mongoose.connection.readyState,
-    mongooseStates: {
-      0: "disconnected",
-      1: "connected",
-      2: "connecting",
-      3: "disconnecting",
-    },
+    timestamp: new Date().toISOString(),
   });
 });
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(
+    `🔗 Supabase URL: ${
+      process.env.SUPABASE_URL ? "Connected" : "Not configured"
+    }`
+  );
+  console.log(
+    `🔥 Firebase Project: ${
+      process.env.FIREBASE_PROJECT_ID || "Not configured"
+    }`
+  );
+});

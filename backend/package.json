@@ -4,20 +4,25 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node test-setup.js",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'No build step needed for Node.js'",
+    "setup-db": "echo 'Run the SQL in database-schema.sql in your Supabase dashboard'",
+    "test-setup": "node test-setup.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@supabase/supabase-js": "^2.87.3",
     "axios": "^1.13.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "firebase-admin": "^13.6.0",
     "mongoose": "^7.6.0",
     "nodemon": "^3.1.10"
   },

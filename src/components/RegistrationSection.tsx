@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, ArrowRight, Download } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { CheckCircle2, ArrowRight, Download, Loader2 } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
 import {
   Dialog,
@@ -14,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { registerUser } from "@/lib/api";
 
 const WHATSAPP_LINK = "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
 const APP_DOWNLOAD_LINK = "http://svastha.fit/download";
@@ -47,6 +47,7 @@ const RegistrationSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -75,6 +76,8 @@ const RegistrationSection = () => {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
+
 
   const validateForm = () => {
     const newErrors = { name: "", email: "", phone: "" };
@@ -114,28 +117,28 @@ const RegistrationSection = () => {
     try {
       const fullPhone = `${formData.countryCode}${formData.phone.trim()}`;
 
-      const { error } = await supabase.from("yoga_registrations").insert({
-        name: formData.name.trim(),
-        email: formData.email.trim() || null,
-        phone: fullPhone,
-      });
+      const result = await registerUser(
+        formData.name.trim(),
+        fullPhone,
+        formData.email.trim() || undefined
+      );
 
-      if (error) {
-        if (error.code === "23505") {
-          toast({
-            title: "Already Registered!",
-            description: "This phone number is already registered for the camp.",
-            variant: "destructive",
-          });
-        } else {
-          throw error;
-        }
-        return;
-      }
-
+      // Show success modal
       setIsModalOpen(true);
       setModalStep(1);
       setFormData({ name: "", email: "", countryCode: "+91", phone: "" });
+
+      if (result.already_registered) {
+        toast({
+          title: "Already Registered!",
+          description: result.message || "You're already registered for the yoga camp.",
+        });
+      } else {
+        toast({
+          title: "Registration Successful!",
+          description: result.message || "You're registered for the yoga camp!",
+        });
+      }
     } catch (error) {
       console.error("Registration failed:", error);
       toast({
@@ -147,6 +150,8 @@ const RegistrationSection = () => {
       setIsLoading(false);
     }
   };
+
+
 
   const handleJoinWhatsApp = () => {
     window.open(WHATSAPP_LINK, "_blank");
@@ -192,6 +197,7 @@ const RegistrationSection = () => {
           className="max-w-2xl mx-auto"
         >
           <div className="bg-card rounded-3xl p-8 md:p-12 shadow-hover">
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <Label htmlFor="name" className="text-base">
@@ -213,7 +219,7 @@ const RegistrationSection = () => {
 
               <div>
                 <Label htmlFor="email" className="text-base">
-                  Email Address (Optional)
+                  Email (Optional)
                 </Label>
                 <Input
                   id="email"
@@ -221,7 +227,7 @@ const RegistrationSection = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your email address"
+                  placeholder="Enter your email"
                   className="mt-2"
                   disabled={isLoading}
                 />
@@ -286,7 +292,14 @@ const RegistrationSection = () => {
                 disabled={isLoading}
                 className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {isLoading ? "Registering..." : "Complete Registration"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  "Complete Registration"
+                )}
               </Button>
             </form>
           </div>
