@@ -23,7 +23,7 @@ app.use(express.json());
 
 // ✅ Base route for health check
 app.get("/", (req, res) => {
-  res.send("YogaCamp Backend API is running with Supabase + Firebase...");
+  res.send("YogaCamp Backend API is running with Supabase...");
 });
 
 // ✅ Simple registration - directly store in yoga_registrations table
@@ -81,7 +81,6 @@ app.get("/api/debug", (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL ? "Set" : "Not Set",
     supabaseKey: process.env.SUPABASE_ANON_KEY ? "Set" : "Not Set",
-    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? "Set" : "Not Set",
     nodeEnv: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   });
@@ -92,11 +91,6 @@ app.listen(PORT, () => {
   console.log(
     `🔗 Supabase URL: ${
       process.env.SUPABASE_URL ? "Connected" : "Not configured"
-    }`
-  );
-  console.log(
-    `🔥 Firebase Project: ${
-      process.env.FIREBASE_PROJECT_ID || "Not configured"
     }`
   );
 });
