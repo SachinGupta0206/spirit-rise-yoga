@@ -12,15 +12,14 @@ export interface ApiResponse {
 // Simple registration - directly register user
 export const registerUser = async (
   name: string,
-  phone: string,
-  email?: string
+  email: string
 ): Promise<ApiResponse> => {
   const response = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, phone, email }),
+    body: JSON.stringify({ name, email }),
   });
 
   if (!response.ok) {

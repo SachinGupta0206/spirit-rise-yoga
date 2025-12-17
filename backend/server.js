@@ -14,8 +14,16 @@ const corsOptions = {
   origin:
     process.env.NODE_ENV === "production"
       ? ["https://spiritriseyoga.com", "https://campaign.svastha.fit"]
-      : ["http://localhost:5173", "http://localhost:3000"],
+      : [
+          "http://localhost:5173",
+          "http://localhost:3000",
+          "http://localhost:8080",
+          "http://127.0.0.1:8080",
+        ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200, // For legacy browser support
 };
 
 app.use(cors(corsOptions));
@@ -23,25 +31,33 @@ app.use(express.json());
 
 // ✅ Base route for health check
 app.get("/", (req, res) => {
-  res.send("YogaCamp Backend API is running with Supabase + Firebase...");
+  res.send("YogaCamp Backend API is running with Supabase...");
 });
 
 // ✅ Simple registration - directly store in yoga_registrations table
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, phone, email } = req.body;
+    const { name, email } = req.body;
 
-    if (!name || !phone) {
-      return res.status(400).json({ error: "Name and phone are required" });
+    if (!name || !email) {
+      return res.status(400).json({ error: "Name and email are required" });
     }
 
-    console.log("📝 Registering user:", { name, phone, email });
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ error: "Please enter a valid email address" });
+    }
+
+    console.log("📝 Registering user:", { name, email });
 
     // Check if already registered
     const { data: existingRegistration } = await supabase
       .from("yoga_registrations")
       .select("id, name")
-      .eq("phone", phone)
+      .eq("email", email)
       .single();
 
     if (existingRegistration) {
@@ -56,8 +72,11 @@ app.post("/api/register", async (req, res) => {
     // Register for yoga camp
     const { error } = await supabase.from("yoga_registrations").insert({
       name,
-      phone,
-      email: email || null,
+      email,
+      phone: null, // Phone is now optional
+      user_id: null, // Not linking to users table for now
+      whatsapp_joined: false,
+      app_installed: false,
     });
 
     if (error) {
@@ -81,7 +100,6 @@ app.get("/api/debug", (req, res) => {
   res.json({
     supabaseUrl: process.env.SUPABASE_URL ? "Set" : "Not Set",
     supabaseKey: process.env.SUPABASE_ANON_KEY ? "Set" : "Not Set",
-    firebaseProjectId: process.env.FIREBASE_PROJECT_ID ? "Set" : "Not Set",
     nodeEnv: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   });
@@ -92,11 +110,6 @@ app.listen(PORT, () => {
   console.log(
     `🔗 Supabase URL: ${
       process.env.SUPABASE_URL ? "Connected" : "Not configured"
-    }`
-  );
-  console.log(
-    `🔥 Firebase Project: ${
-      process.env.FIREBASE_PROJECT_ID || "Not configured"
     }`
   );
 });
