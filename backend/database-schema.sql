@@ -4,13 +4,12 @@
 CREATE TABLE IF NOT EXISTS yoga_registrations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
-  phone TEXT NOT NULL UNIQUE,
-  email TEXT,
+  email TEXT NOT NULL UNIQUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Create index for faster queries
-CREATE INDEX IF NOT EXISTS idx_yoga_registrations_phone ON yoga_registrations(phone);
+CREATE INDEX IF NOT EXISTS idx_yoga_registrations_email ON yoga_registrations(email);
 
 -- Enable Row Level Security (optional)
 ALTER TABLE yoga_registrations ENABLE ROW LEVEL SECURITY;

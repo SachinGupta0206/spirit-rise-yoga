@@ -29,19 +29,27 @@ app.get("/", (req, res) => {
 // ✅ Simple registration - directly store in yoga_registrations table
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, phone, email } = req.body;
+    const { name, email } = req.body;
 
-    if (!name || !phone) {
-      return res.status(400).json({ error: "Name and phone are required" });
+    if (!name || !email) {
+      return res.status(400).json({ error: "Name and email are required" });
     }
 
-    console.log("📝 Registering user:", { name, phone, email });
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ error: "Please enter a valid email address" });
+    }
+
+    console.log("📝 Registering user:", { name, email });
 
     // Check if already registered
     const { data: existingRegistration } = await supabase
       .from("yoga_registrations")
       .select("id, name")
-      .eq("phone", phone)
+      .eq("email", email)
       .single();
 
     if (existingRegistration) {
@@ -56,8 +64,7 @@ app.post("/api/register", async (req, res) => {
     // Register for yoga camp
     const { error } = await supabase.from("yoga_registrations").insert({
       name,
-      phone,
-      email: email || null,
+      email,
     });
 
     if (error) {
