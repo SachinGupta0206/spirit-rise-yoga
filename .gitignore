@@ -28,6 +28,13 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.staging
+.env.svastha-api
+
+# Allow example files
+!.env.example
+!backend/.env.example
 
 # Backend specific files (not the whole folder)
 backend/.env

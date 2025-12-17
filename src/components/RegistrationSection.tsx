@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, ArrowRight, Download } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { CheckCircle2, ArrowRight, Download, Loader2 } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
 import {
   Dialog,
@@ -14,6 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import OTPVerification from "./OTPVerification";
+import { checkUser, registerExisting, sendOTP } from "@/lib/api";
+import { config } from "@/lib/config";
 
 const WHATSAPP_LINK = "https://chat.whatsapp.com/CxkVX14yHcrLRpMoDVftMN";
 const APP_DOWNLOAD_LINK = "http://svastha.fit/download";
@@ -47,6 +49,17 @@ const RegistrationSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
+  const [alreadyRegistered, setAlreadyRegistered] = useState<{
+    name: string;
+    phone: string;
+  } | null>(null);
+  const [existingUser, setExistingUser] = useState<{
+    user_id: string;
+    name: string;
+    email?: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -67,12 +80,31 @@ const RegistrationSection = () => {
     if (name === "phone") {
       const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+
+      // Check registration status when phone number is complete
+      if (digitsOnly.length === 10) {
+        const fullPhone = `${formData.countryCode}${digitsOnly}`;
+        checkRegistrationStatus(fullPhone);
+      } else {
+        setAlreadyRegistered(null);
+      }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const handleCountryCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCountryCode = e.target.value;
+    setFormData((prev) => ({ ...prev, countryCode: newCountryCode }));
+
+    // Re-check registration if phone is complete
+    if (formData.phone.length === 10) {
+      const fullPhone = `${newCountryCode}${formData.phone}`;
+      checkRegistrationStatus(fullPhone);
     }
   };
 
@@ -114,28 +146,50 @@ const RegistrationSection = () => {
     try {
       const fullPhone = `${formData.countryCode}${formData.phone.trim()}`;
 
-      const { error } = await supabase.from("yoga_registrations").insert({
-        name: formData.name.trim(),
-        email: formData.email.trim() || null,
-        phone: fullPhone,
-      });
+      // Step 1: Check if user exists in Svastha database
+      const userCheck = await checkUser(fullPhone);
 
-      if (error) {
-        if (error.code === "23505") {
+      if (userCheck.exists) {
+        // Existing user - direct registration
+        setExistingUser({
+          user_id: userCheck.user_id!,
+          name: userCheck.name || formData.name,
+          email: userCheck.email,
+        });
+
+        const result = await registerExisting(
+          fullPhone,
+          userCheck.user_id!,
+          userCheck.name || formData.name,
+          userCheck.email || formData.email || undefined
+        );
+
+        // Show success modal
+        setIsModalOpen(true);
+        setModalStep(1);
+        setFormData({ name: "", email: "", countryCode: "+91", phone: "" });
+
+        if (result.already_registered) {
           toast({
             title: "Already Registered!",
-            description: "This phone number is already registered for the camp.",
-            variant: "destructive",
+            description: "You're already registered for the yoga camp. Welcome back!",
           });
         } else {
-          throw error;
+          toast({
+            title: "Registration Successful!",
+            description: "Welcome back! You're registered for the yoga camp.",
+          });
         }
-        return;
-      }
+      } else {
+        // New user - send OTP
+        await sendOTP(fullPhone);
+        setShowOTP(true);
 
-      setIsModalOpen(true);
-      setModalStep(1);
-      setFormData({ name: "", email: "", countryCode: "+91", phone: "" });
+        toast({
+          title: "OTP Sent!",
+          description: "Please check your phone for verification code.",
+        });
+      }
     } catch (error) {
       console.error("Registration failed:", error);
       toast({
@@ -145,6 +199,90 @@ const RegistrationSection = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleOTPVerified = async (otp: string) => {
+    setIsLoading(true);
+
+    try {
+      const fullPhone = `${formData.countryCode}${formData.phone.trim()}`;
+
+      // Verify OTP and register
+      const response = await fetch(`${config.apiBaseUrl}/verify-and-register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: fullPhone,
+          otp: otp,
+          name: formData.name.trim(),
+          email: formData.email.trim() || undefined,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Verification failed');
+      }
+
+      // Success - show modal
+      setShowOTP(false);
+      setIsModalOpen(true);
+      setModalStep(1);
+      setFormData({ name: "", email: "", countryCode: "+91", phone: "" });
+
+      toast({
+        title: "Registration Successful!",
+        description: "Welcome! You're registered for the yoga camp.",
+      });
+    } catch (error) {
+      console.error("OTP verification failed:", error);
+      toast({
+        title: "Verification Failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBackFromOTP = () => {
+    setShowOTP(false);
+  };
+
+  const checkRegistrationStatus = async (phone: string) => {
+    if (!phone || phone.length < 13) return; // +91 + 10 digits minimum
+
+    setIsCheckingRegistration(true);
+    try {
+      // Check if already registered for yoga camp
+      const response = await fetch(`${config.apiBaseUrl}/check-registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      const result = await response.json();
+
+      if (result.registered) {
+        setAlreadyRegistered({
+          name: result.name,
+          phone: phone,
+        });
+      } else {
+        setAlreadyRegistered(null);
+      }
+    } catch (error) {
+      console.error("Check registration error:", error);
+      setAlreadyRegistered(null);
+    } finally {
+      setIsCheckingRegistration(false);
     }
   };
 
@@ -192,103 +330,135 @@ const RegistrationSection = () => {
           className="max-w-2xl mx-auto"
         >
           <div className="bg-card rounded-3xl p-8 md:p-12 shadow-hover">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="name" className="text-base">
-                  Full Name *
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your full name"
-                  className="mt-2"
-                  disabled={isLoading}
-                />
-                {errors.name && (
-                  <p className="text-destructive text-sm mt-1">{errors.name}</p>
-                )}
-              </div>
+            {alreadyRegistered ? (
+              <div className="text-center space-y-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                  <CheckCircle2 className="mx-auto text-green-600 mb-4" size={48} />
+                  <h3 className="text-xl font-semibold text-green-800 mb-2">
+                    Already Registered!
+                  </h3>
+                  <p className="text-green-700 mb-4">
+                    Hi <strong>{alreadyRegistered.name}</strong>! You're already registered for the Ultimate 21-Day Yoga Camp.
+                  </p>
+                  <p className="text-sm text-green-600">
+                    Phone: {alreadyRegistered.phone}
+                  </p>
+                </div>
 
-              <div>
-                <Label htmlFor="email" className="text-base">
-                  Email Address (Optional)
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email address"
-                  className="mt-2"
-                  disabled={isLoading}
-                />
-                {errors.email && (
-                  <p className="text-destructive text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
+                <div className="space-y-4">
+                  <Button
+                    onClick={() => {
+                      setIsModalOpen(true);
+                      setModalStep(1);
+                    }}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-6"
+                  >
+                    <CheckCircle2 className="mr-2" size={20} />
+                    Continue to WhatsApp & App
+                  </Button>
 
-              <div>
-                <Label htmlFor="phone" className="text-base">
-                  Phone Number *
-                </Label>
-                <div className="flex gap-2 mt-2">
-                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <ReactCountryFlag
-                        countryCode={COUNTRY_CODES.find((c) => c.code === formData.countryCode)?.country || "IN"}
-                        svg
-                        style={{ width: "1.2em", height: "1.2em" }}
-                      />
-                    </div>
-                    <select
-                      name="countryCode"
-                      value={formData.countryCode}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, countryCode: e.target.value }))}
-                      disabled={isLoading}
-                      className="flex h-10 w-20 rounded-md border border-input bg-background pl-9 pr-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
-                    >
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.code}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <button
+                    onClick={() => setAlreadyRegistered(null)}
+                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Register with different number →
+                  </button>
+                </div>
+              </div>
+            ) : showOTP ? (
+              <OTPVerification
+                phone={`${formData.countryCode}${formData.phone}`}
+                onVerified={handleOTPVerified}
+                onBack={handleBackFromOTP}
+                isLoading={isLoading}
+              />
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <Label htmlFor="name" className="text-base">
+                    Full Name *
+                  </Label>
                   <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="Phone number"
+                    placeholder="Enter your full name"
+                    className="mt-2"
                     disabled={isLoading}
-                    className="flex-1"
                   />
-                </div>
-                <div className="flex justify-between mt-1">
-                  {errors.phone ? (
-                    <p className="text-destructive text-sm">{errors.phone}</p>
-                  ) : (
-                    <span />
+                  {errors.name && (
+                    <p className="text-destructive text-sm mt-1">{errors.name}</p>
                   )}
-                  <span className={`text-sm ${formData.phone.length >= 10 ? "text-green-600" : "text-muted-foreground"}`}>
-                    {formData.phone.length}/10
-                  </span>
                 </div>
-              </div>
 
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              >
-                {isLoading ? "Registering..." : "Complete Registration"}
-              </Button>
-            </form>
+                <div>
+                  <Label htmlFor="phone" className="text-base">
+                    Phone Number *
+                  </Label>
+                  <div className="flex gap-2 mt-2">
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <ReactCountryFlag
+                          countryCode={COUNTRY_CODES.find((c) => c.code === formData.countryCode)?.country || "IN"}
+                          svg
+                          style={{ width: "1.2em", height: "1.2em" }}
+                        />
+                      </div>
+                      <select
+                        name="countryCode"
+                        value={formData.countryCode}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, countryCode: e.target.value }))}
+                        disabled={isLoading}
+                        className="flex h-10 w-20 rounded-md border border-input bg-background pl-9 pr-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.code}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone number"
+                      disabled={isLoading}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    {errors.phone ? (
+                      <p className="text-destructive text-sm">{errors.phone}</p>
+                    ) : (
+                      <span />
+                    )}
+                    <span className={`text-sm ${formData.phone.length >= 10 ? "text-green-600" : "text-muted-foreground"}`}>
+                      {formData.phone.length}/10
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isLoading}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Checking...
+                    </>
+                  ) : (
+                    "Complete Registration"
+                  )}
+                </Button>
+              </form>
+            )}
           </div>
         </motion.div>
       </div>
