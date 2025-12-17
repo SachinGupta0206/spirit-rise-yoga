@@ -29,12 +29,20 @@ const ScheduleSection = () => {
     }
   };
 
-  // Convert IST time to user's local timezone - returns object with time and timezone
-  const convertTime = (istTime: string): { time: string; timezone: string } => {
+  // Convert IST time to user's local timezone - returns object with time, timezone, and hour
+  const convertTime = (istTime: string): { time: string; timezone: string; hour24: number } => {
     if (isIST) {
+      // Parse IST time to get hour for classification
+      const [time, period] = istTime.split(" ");
+      const [hours] = time.split(":").map(Number);
+      let hour24 = hours;
+      if (period === "PM" && hours !== 12) hour24 += 12;
+      if (period === "AM" && hours === 12) hour24 = 0;
+
       return {
         time: istTime.toLowerCase(),
         timezone: "IST",
+        hour24: hour24,
       };
     }
 
@@ -70,17 +78,43 @@ const ScheduleSection = () => {
         })
         .toLowerCase(); // Convert AM/PM to am/pm
 
+      // Get the local hour for classification
+      const localHour = istDate.getHours();
+
       const tzAbbr = getTimezoneAbbr();
       return {
         time: localTime,
         timezone: tzAbbr,
+        hour24: localHour,
       };
     } catch (error) {
       console.error("Error converting time:", error);
+      // Parse IST time to get hour for fallback
+      const [time, period] = istTime.split(" ");
+      const [hours] = time.split(":").map(Number);
+      let hour24 = hours;
+      if (period === "PM" && hours !== 12) hour24 += 12;
+      if (period === "AM" && hours === 12) hour24 = 0;
+
       return {
         time: istTime.toLowerCase(),
         timezone: "IST",
+        hour24: hour24,
       };
+    }
+  };
+
+  // Determine if a batch is morning or evening based on converted times
+  const getBatchLabel = (times: string[]): string => {
+    const convertedTimes = times.map(time => convertTime(time));
+    const avgHour = convertedTimes.reduce((sum, t) => sum + t.hour24, 0) / convertedTimes.length;
+
+    if (avgHour < 12) {
+      return "Morning Batches";
+    } else if (avgHour < 17) {
+      return "Afternoon Batches";
+    } else {
+      return "Evening Batches";
     }
   };
 
@@ -137,11 +171,11 @@ const ScheduleSection = () => {
                     <Clock className="text-primary" size={24} />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground">
-                    Morning Batches
+                    {getBatchLabel(morningBatches)}
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {eveningBatches.map((time, index) => {
+                  {morningBatches.map((time, index) => {
                     const converted = convertTime(time);
                     return (
                       <motion.div
@@ -165,7 +199,6 @@ const ScheduleSection = () => {
               </Card>
             </motion.div>
 
-            {/* Evening Batches */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -178,11 +211,11 @@ const ScheduleSection = () => {
                     <Clock className="text-secondary" size={24} />
                   </div>
                   <h3 className="text-2xl font-bold text-foreground">
-                    Evening Batches
+                    {getBatchLabel(eveningBatches)}
                   </h3>
                 </div>
                 <div className="space-y-3">
-                  {morningBatches.map((time, index) => {
+                  {eveningBatches.map((time, index) => {
                     const converted = convertTime(time);
                     return (
                       <motion.div
