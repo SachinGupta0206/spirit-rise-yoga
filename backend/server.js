@@ -62,9 +62,16 @@ app.post("/api/register", async (req, res) => {
     }
 
     // Register for yoga camp
+    // Generate a unique dummy phone since phone is required in current table structure
+    const dummyPhone = `+91${Date.now().toString().slice(-10)}`;
+
     const { error } = await supabase.from("yoga_registrations").insert({
       name,
       email,
+      phone: dummyPhone, // Generate dummy phone since column is NOT NULL UNIQUE
+      user_id: null, // Not linking to users table for now
+      whatsapp_joined: false,
+      app_installed: false,
     });
 
     if (error) {
