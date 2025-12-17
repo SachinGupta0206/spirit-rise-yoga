@@ -167,7 +167,12 @@ const RegistrationSection = () => {
           <div className="bg-card rounded-3xl p-8 md:p-12 shadow-hover">
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+              >
                 <Label htmlFor="name" className="text-base">
                   Full Name *
                 </Label>
@@ -177,15 +182,26 @@ const RegistrationSection = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Enter your full name"
-                  className="mt-2"
+                  className="mt-2 transition-all duration-300 focus:scale-[1.02] focus:shadow-md"
                   disabled={isLoading}
                 />
                 {errors.name && (
-                  <p className="text-destructive text-sm mt-1">{errors.name}</p>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-destructive text-sm mt-1"
+                  >
+                    {errors.name}
+                  </motion.p>
                 )}
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
                 <Label htmlFor="email" className="text-base">
                   Email Address *
                 </Label>
@@ -196,29 +212,42 @@ const RegistrationSection = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email address"
-                  className="mt-2"
+                  className="mt-2 transition-all duration-300 focus:scale-[1.02] focus:shadow-md"
                   disabled={isLoading}
                 />
                 {errors.email && (
-                  <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-destructive text-sm mt-1"
+                  >
+                    {errors.email}
+                  </motion.p>
                 )}
-              </div>
+              </motion.div>
 
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Checking...
-                  </>
-                ) : (
-                  "Complete Registration"
-                )}
-              </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isLoading}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6 shadow-hover transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    "Complete Registration"
+                  )}
+                </Button>
+              </motion.div>
             </form>
           </div>
         </motion.div>
